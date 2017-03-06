@@ -4,6 +4,8 @@ import __init__
 '''
 #
 from power_level import prob_dpath, default_pn, default_pn_fpath
+from _class import zone, beacon
+import heuristic
 #
 from file_handling_functions import save_pklFile, load_pklFile, get_fnOnly, check_file_exist
 #
@@ -69,8 +71,13 @@ class beaconViewer(wx.Frame):
             for i in range(numCols):
                 for j in range(numRows):
                     self.zones[i, j] = zone(i, j, colUnit, rowUnit)
+            self.beacons = {}
         else:
             self.zones = load_pklFile(default_pn_fpath)
+            self.beacons = {}
+            for (i, j), z in self.zones.iteritems():
+                if z.hasBeacon:
+                    self.beacons[i, j] = beacon(i, j, z.unitX, z.unitY)
             self.gridPanel.Refresh()
         self.Bind(wx.EVT_CLOSE, self.OnQuit)
 
@@ -131,7 +138,14 @@ class beaconViewer(wx.Frame):
             self.gridPanel.Refresh()
 
     def probSolve(self, _):
+        print '-----------------------------------'
         print 'run'
+        self.beacons = {}
+        for (i, j), z in self.zones.iteritems():
+            if z.hasBeacon:
+                self.beacons[i, j] = beacon(i, j, z.unitX, z.unitY)
+        heuristic.run(self.beacons, self.zones)
+        self.gridPanel.Refresh()
 
     def initGrid(self, _pos, _size):
         gridPanel = wx.Panel(self.basePanel, -1, pos=_pos, size=_size)
@@ -166,36 +180,18 @@ class beaconViewer(wx.Frame):
         dc.Clear()
         for z in self.zones.itervalues():
             z.zoneDraw(dc)
+        for b in self.beacons.itervalues():
+            b.rangeDraw(dc)
 
     def OnPaint(self, e):
         dc = wx.BufferedPaintDC(self.gridPanel)
         self.Draw(dc)
 
 
-class zone(object):
-    def __init__(self, i, j, unitX, unitY):
-        self.i, self.j = i, j
-        self.unitX, self.unitY = unitX, unitY
-        self.halfUnitX = self.unitX / float(2)
-        self.halfUnitY = self.unitY / float(2)
-        self.cx, self.cy = self.i * self.unitX + self.halfUnitX, self.j * self.unitY + self.halfUnitY
-        self.radius = min(self.halfUnitX, self.halfUnitY) / float(4)
-        #
-        self.isFeasible, self.hasBeacon = False, False
-
-    def zoneDraw(self, dc):
-        if self.isFeasible:
-            dc.SetBrush(wx.Brush(ORANGE))
-        else:
-            dc.SetBrush(wx.Brush(WHITE))
-        dc.DrawRectangle(self.cx - self.halfUnitX, self.cy - self.halfUnitY, self.unitX, self.unitY)
-        if self.hasBeacon:
-            dc.SetBrush(wx.Brush(BLACK))
-            dc.DrawCircle(self.cx, self.cy, self.radius)
-
 
 if __name__ == '__main__':
-    numRows, numCols = 10, 12
+    numCols, numRows = 10, 10
+    # numRows, numCols = 12, 12
     mv = beaconViewer('Viewer', numRows, numCols, pos=(200, 200), size=(1200, 600))
     mv.Show(True)
     app.MainLoop()
