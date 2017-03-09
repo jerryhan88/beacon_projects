@@ -2,38 +2,62 @@ import __init__
 '''
 
 '''
-from _class import zone, user
+from _class import zone, user, beacon
 #
 from math import sqrt
-from random import random
+from random import random, seed, choice
 from bisect import bisect
+
 #
 DISTANCE = 20
-lenX, lenY = 100, 50
-numCols, numRows = 10, 5
-colUnit, rowUnit = lenX / float(numCols), lenY / float(numRows)
-xPoints, yPoints = [i * colUnit for i in range(numCols)], [j * rowUnit for j in range(numRows)]
+
 TIME_INTERVAL = 60
 K = 4
 TIME_UNIT = TIME_INTERVAL / float(K)
 
 
-def run():
-    users = {uid: user(uid, genRandomTrajectory(lenX, lenY)) for uid in range(10)}
-    zones = {}
+def problem1():
+    seed(1)
+    # Zones generation
+    lenX, lenY = 100, 50
+    numCols, numRows = 10, 5
+    colUnit, rowUnit = lenX / float(numCols), lenY / float(numRows)
+    xPoints, yPoints = [i * colUnit for i in range(numCols)], [j * rowUnit for j in range(numRows)]
+    Z = {}
     for i in range(numCols):
         for j in range(numRows):
-            z = zone(i,j, colUnit, rowUnit)
+            z = zone(i, j, colUnit, rowUnit)
             z.timeSlots = [set() for _ in range(K)]
-            zones[i,j] = z
+            Z[i, j] = z
+    #
+    # Users generation
+    #
+    numUsers = 10
+    U = {uid: user(uid, genRandomTrajectory(lenX, lenY)) for uid in range(numUsers)}
+    #
+    # Beacons generation
+    #
+    numBeacons = 5
+    B = {}
+    initBatteryCapacity = 20
+    beaconsPosition = set()
+    for bid in range(numBeacons):
+        Z.keys()
+        B[bid] = beacon()
 
-    for u in users.itervalues():
+
+
+
+
+
+
+    for u in U.itervalues():
         for l in u.trajectory:
             t, x, y = l
             ts = int(t / TIME_UNIT)
             i, j = bisect(xPoints, x) - 1, bisect(yPoints, y) - 1
-            zones[i, j].timeSlots[ts].add(u)
-    for z in zones.itervalues():
+            Z[i, j].timeSlots[ts].add(u)
+    for z in Z.itervalues():
         print z, z.timeSlots
 
 

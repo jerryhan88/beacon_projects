@@ -5,7 +5,7 @@ import __init__
 #
 from power_level import prob_dpath, default_pn, default_pn_fpath
 from _class import zone, beacon
-import heuristic
+import _heuristic
 #
 from file_handling_functions import save_pklFile, load_pklFile, get_fnOnly, check_file_exist
 #
@@ -144,7 +144,7 @@ class beaconViewer(wx.Frame):
         for (i, j), z in self.zones.iteritems():
             if z.hasBeacon:
                 self.beacons[i, j] = beacon(i, j, z.unitX, z.unitY)
-        heuristic.run(self.beacons, self.zones)
+        _heuristic.run(self.beacons, self.zones)
         self.gridPanel.Refresh()
 
     def initGrid(self, _pos, _size):
