@@ -8,7 +8,37 @@ from _class import beacon
 from file_handling_functions import load_pklFile
 #
 from heapq import heappush, heappop
+from bisect import bisect
 import itertools
+
+TIME_INTERVAL = 60
+
+
+def run():
+    from problem import problem1
+    Z, B, U, K, _alpha, _beta, P = problem1()
+    heuristicRun(Z, B, U, K, _alpha, _beta, P)
+
+
+def heuristicRun(Z, B, U, K, _alpha, _beta, P):
+    time_unit = TIME_INTERVAL / float(K)
+    #
+    xPoints, yPoints = set(), set()
+    for z in Z.itervalues():
+        for x, y in [z.leftUpperCoords, z.leftLowerCoords, z.rightLowerCoords, z.rightUpperCoords]:
+            xPoints.add(x)
+            yPoints.add(y)
+    xPoints, yPoints = list(xPoints).sort(), list(yPoints).sort()
+    #
+    for u in U.itervalues():
+        for l in u.trajectory:
+            t, x, y = l
+            ts = int(t / time_unit)
+            i, j = bisect(xPoints, x) - 1, bisect(yPoints, y) - 1
+            Z[i, j].timeSlots[ts].add(u)
+    for z in Z.itervalues():
+        print z, z.timeSlots
+
 
 
 def binseq(k):

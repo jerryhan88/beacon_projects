@@ -1,63 +1,34 @@
-import wx
-
-
-MARGIN = 10
-WHITE = wx.Colour(255, 255, 255)
-ORANGE = wx.Colour(228, 108, 10)
-RED = wx.Colour(255, 0, 0)
-BLACK = wx.Colour(0, 0, 0)
-GRAY = wx.Colour(220, 220, 220)
+import __init__
+'''
+'''
+#
 
 class zone(object):
-    def __init__(self, i, j, unitX, unitY):
+    def __init__(self, i, j, width, height):
         self.i, self.j = i, j
-        self.unitX, self.unitY = unitX, unitY
-        self.halfUnitX = self.unitX / float(2)
-        self.halfUnitY = self.unitY / float(2)
-        self.cx, self.cy = self.i * self.unitX + self.halfUnitX, self.j * self.unitY + self.halfUnitY
-        self.radius = min(self.halfUnitX, self.halfUnitY) / float(4)
-        #
-        self.isFeasible, self.hasBeacon = False, False
+        self.width, self.height = width, height
+        halfWidth = self.width / float(2)
+        halfHeight = self.height / float(2)
+        self.centerCoords = (self.i * self.width + halfWidth, self.j * self.height + halfHeight)
+        self.leftUpperCoords = (self.i * self.width, self.j * self.height)
+        self.leftLowerCoords = (self.i * self.width, (self.j + 1) * self.height)
+        self.rightLowerCoords = ((self.i + 1) * self.width, (self.j + 1) * self.height)
+        self.rightUpperCoords = ((self.i + 1) * self.width, self.j * self.height)
+
     def __repr__(self):
         return 'z(%d, %d)' % (self.i, self.j)
-    def zoneDraw(self, dc):
-        if self.isFeasible:
-            dc.SetBrush(wx.Brush(ORANGE))
-        else:
-            dc.SetBrush(wx.Brush(WHITE))
-        dc.DrawRectangle(self.cx - self.halfUnitX, self.cy - self.halfUnitY, self.unitX, self.unitY)
-        if self.hasBeacon:
-            dc.SetBrush(wx.Brush(BLACK))
-            dc.DrawCircle(self.cx, self.cy, self.radius)
-        dc.DrawText('%d,%d' % (self.i, self.j), self.cx, self.cy)
 
-MAX_BP = 100
 
 class beacon(object):
-    MAX_PL = 3
-
-    def __init__(self, i, j, unitX, unitY):
-        self.i, self.j = i, j
-        self.remaingBP = MAX_BP
-        self.p = 0
-        #
-        self.unitX, self.unitY = unitX, unitY
-        self.halfUnitX = self.unitX / float(2)
-        self.halfUnitY = self.unitY / float(2)
-        self.cx, self.cy = self.i * self.unitX + self.halfUnitX, self.j * self.unitY + self.halfUnitY
+    def __init__(self, bid, locatedZone, initBatteryCapacity, ):
+        self.bid = bid
+        self.locatedZone = locatedZone
+        self.remainingBC = initBatteryCapacity
 
     def __repr__(self):
-        return 'b(%d, %d)' % (self.i, self.j)
+        return 'b%d(%d, %d)' % (self.bid, self.locatedZone.i, self.locatedZone.j)
 
-    def rangeDraw(self, dc):
-        if self.p != 0:
-            old_pen = dc.GetPen()
-            old_brush = dc.GetBrush()
-            dc.SetPen(wx.Pen("grey"))
-            dc.SetBrush(wx.Brush("grey", wx.TRANSPARENT))
-            dc.DrawCircle(self.cx, self.cy, self.p * self.unitX)
-            dc.SetBrush(old_brush)
-            dc.SetPen(old_pen)
+
 
 class user(object):
     def __init__(self, uid, trajectory):
