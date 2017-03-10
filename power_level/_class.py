@@ -20,7 +20,7 @@ class zone(object):
 
 
 class beacon(object):
-    def __init__(self, bid, locatedZone, initBatteryCapacity, ):
+    def __init__(self, bid, locatedZone, initBatteryCapacity):
         self.bid = bid
         self.locatedZone = locatedZone
         self.remainingBC = initBatteryCapacity

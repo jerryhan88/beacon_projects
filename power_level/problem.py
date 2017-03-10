@@ -22,29 +22,58 @@ def problem1():
     for i in range(numCols):
         for j in range(numRows):
             z = zone(i, j, colUnit, rowUnit)
-            z.timeSlots = [set() for _ in range(K)]
             Z[i, j] = z
     #
     # Beacons generation
     #
     numBeacons = 5
     B = {}
-    initBatteryCapacity = 20
+    initBatteryCapacity = 40
     beaconsPosition = set()
     for bid in range(numBeacons):
         z = choice(Z.values())
         while z in beaconsPosition:
             z = choice(Z.values())
-        B[bid] = beacon(bid, initBatteryCapacity, z)
+        B[bid] = beacon(bid, z, initBatteryCapacity)
     #
     # Users generation
     #
     numUsers = 10
     U = {uid: user(uid, genRandomTrajectory(lenX, lenY)) for uid in range(numUsers)}
     #
-    K, _alpha, _beta, P = 4, 1, 1, 3
-    return Z, B, U, K, _alpha, _beta, P
+    K, alpha, beta, P = 4, 1, 1, 5
+    return Z, B, U, K, alpha, beta, P
 
+def problem2():
+    # Zones generation
+    lenX, lenY = 100, 50
+    numCols, numRows = 10, 5
+    colUnit, rowUnit = lenX / float(numCols), lenY / float(numRows)
+    Z = {}
+    for i in range(numCols):
+        for j in range(numRows):
+            z = zone(i, j, colUnit, rowUnit)
+            Z[i, j] = z
+    #
+    # Beacons generation
+    #
+    numBeacons = 5
+    B = {}
+    initBatteryCapacity = 40
+    beaconsPosition = set()
+    for bid in range(numBeacons):
+        z = choice(Z.values())
+        while z in beaconsPosition:
+            z = choice(Z.values())
+        B[bid] = beacon(bid, z, initBatteryCapacity)
+    #
+    # Users generation
+    #
+    numUsers = choice(range(10, 20))
+    U = {uid: user(uid, genRandomTrajectory(lenX, lenY)) for uid in range(numUsers)}
+    #
+    K, alpha, beta, P = 4, 1, 1, 5
+    return Z, B, U, K, alpha, beta, P
 
 def genRandomTrajectory(lenX, lenY):
     initX, initY = random() * lenX, random() * lenY
