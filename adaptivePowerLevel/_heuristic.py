@@ -1,14 +1,12 @@
-import __init__
 '''
 '''
 #
-from power_level import default_pn_fpath
-from _class import beacon
-#
-from file_handling_functions import load_pklFile
-#
-from heapq import heappush, heappop
 import itertools
+from heapq import heappush, heappop
+
+from _class import beacon
+from adaptivePowerLevel import default_pn_fpath
+from supporting_modules.file_handling_functions import load_pklFile
 
 
 def binseq(k):
@@ -69,6 +67,5 @@ def run(beacons, zones):
 
 
 if __name__ == '__main__':
-    from _class import zone
     zones = load_pklFile(default_pn_fpath)
     run(zones)

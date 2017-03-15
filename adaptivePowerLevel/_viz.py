@@ -1,17 +1,16 @@
-import __init__
 #
 '''
 '''
 #
-from power_level import prob_dpath, default_pn, default_pn_fpath
-from _class import zone, beacon
-import _heuristic
-#
-from file_handling_functions import save_pklFile, load_pklFile, get_fnOnly, check_file_exist
-#
+from bisect import bisect
+
 import wx
 import wx.lib.buttons
-from bisect import bisect
+
+import _heuristic
+from _class import zone, beacon
+from adaptivePowerLevel import prob_dpath, default_pn, default_pn_fpath
+from supporting_modules.file_handling_functions import save_pklFile, load_pklFile, get_fnOnly, check_file_exist
 
 app = wx.App(False)
 MARGIN = 10
