@@ -87,7 +87,9 @@ class TestFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, "DragAndDrop", size=(640,480), pos=(100, 100))
         DragPanel(self)
 
-app = wx.App(False)
-frame = TestFrame(None)
-frame.Show(True)
-app.MainLoop()
+
+if __name__ == '__main__':
+    app = wx.App(False)
+    frame = TestFrame(None)
+    frame.Show(True)
+    app.MainLoop()
