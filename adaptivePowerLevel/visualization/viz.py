@@ -1,14 +1,11 @@
-import __init__
-'''
-
-'''
+import wx
+#
+app = wx.App(False)
+#
 from adaptivePowerLevel.visualization import MARGIN
 from adaptivePowerLevel.visualization import BLUE
 from panels import MainPanel, ControlPanel
 #
-import wx
-#
-app = wx.App(False)
 
 
 class MainFrame(wx.Frame):
@@ -17,15 +14,16 @@ class MainFrame(wx.Frame):
                                                 wx.RESIZE_BOX |
                                                 wx.MAXIMIZE_BOX)
         wx.Frame.__init__(self, None, -1, title, pos, size, no_resize)
-        basePanel = wx.Panel(self, -1, pos=(0, 0), size=size)
-        basePanel.SetBackgroundColour(BLUE)
-        sx, sy = basePanel.GetSize()
+        # basePanel = wx.Panel(self, -1, pos=(0, 0), size=size)
+        # basePanel.SetBackgroundColour(BLUE)
+        # sx, sy = basePanel.GetSize()
+        sx, sy = self.GetSize()
         vsRatio = (11, 1)
         vUnit = (sy - (len(vsRatio) + 1) * MARGIN) / sum(vsRatio)
         #
-        MainPanel(basePanel, (MARGIN, MARGIN), (sx - 2 * MARGIN, vUnit * vsRatio[0]))
+        self.mainPanel = MainPanel(self, (MARGIN, MARGIN), (sx - 2 * MARGIN, vUnit * vsRatio[0]))
 
-        ControlPanel(basePanel, (MARGIN, MARGIN + vUnit * vsRatio[0] + MARGIN),
+        ControlPanel(self, (MARGIN, MARGIN + vUnit * vsRatio[0] + MARGIN),
                     (sx - 2 * MARGIN, vUnit * vsRatio[1] - MARGIN))
         #
         self.Show(True)

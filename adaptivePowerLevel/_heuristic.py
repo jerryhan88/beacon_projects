@@ -46,7 +46,7 @@ def run(beacons, zones):
             heappush(Q, (-w, z, mC))
     print len(Q), sorted(Q)
     #
-    # Initialize beacons' power level
+    # Initialize landmarks' power level
     #
     for b in beacons.itervalues():
         b.p = 1e400

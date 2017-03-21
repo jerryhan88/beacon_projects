@@ -4,7 +4,4 @@
 .DS_Store
 /data_LiveLabs/
 data_LiveLabs/
-/adaptivePowerLevel/z_src/
-adaptivePowerLevel/visualization/dragDropExample.pyc
-adaptivePowerLevel/z_data/
-adaptivePowerLevel/z_src/
+*.pyc
