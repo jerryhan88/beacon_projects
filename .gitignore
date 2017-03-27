@@ -5,3 +5,10 @@
 /data_LiveLabs/
 data_LiveLabs/
 *.pyc
+/z_data/location_archival_2017_3_1.csv.gz
+/z_data/location_archival_2017_2_1.csv.gz
+*.c
+*.so
+/dataProcessing/missing_location.txt
+/z_data/Uzk/
+/z_data/tra/
