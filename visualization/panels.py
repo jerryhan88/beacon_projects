@@ -7,7 +7,7 @@ from visualization import MARGIN, ADJUSTMENT
 from visualization import PURPLE
 from visualization import DEFAULT_BOLD_FONT, BIG_FONT, SMALL_FONT
 from visualization import RADIUS
-from visualization import checkBoxNames, checkBoxValues
+from visualization import checkBoxNames, checkBoxValues, dateTimeInfo
 from visualization import grid_adjustment
 from _class import Zone, Beacon, Landmark
 from _configuration import levelNames
@@ -59,8 +59,25 @@ class ControlPanel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, pos=pos, size=size, style=wx.SUNKEN_BORDER)
         # self.SetBackgroundColour(PURPLE)
-        baseSizer = wx.BoxSizer(wx.HORIZONTAL)
+        baseSizer = wx.BoxSizer(wx.VERTICAL)
         #
+        topSizer = wx.BoxSizer(wx.HORIZONTAL)
+        #
+        self.tcs = {}
+        for p in ['From', 'Current', 'To']:
+            bs = wx.BoxSizer(wx.HORIZONTAL)
+            bs.Add(wx.StaticText(self, -1, p), 1, wx.ALL)
+            tc = wx.TextCtrl(self)
+            tc.SetValue(dateTimeInfo[p])
+            tc.Bind(wx.EVT_KEY_DOWN, self.OnEnterPressed)
+            self.tcs[p] = tc
+            bs.Add(tc, 1, wx.ALL)
+            topSizer.Add(bs, 1, wx.ALL, MARGIN)
+
+
+        baseSizer.Add(topSizer, 1)
+
+        belowSizer = wx.BoxSizer(wx.HORIZONTAL)
         checkBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
         for cb_name in checkBoxNames:
             cb = wx.CheckBox(self, -1, cb_name)
@@ -69,8 +86,7 @@ class ControlPanel(wx.Panel):
             if checkBoxValues[cb_name]:
                 cb.SetValue(True)
             self.Bind(wx.EVT_CHECKBOX, self.handleCheckBox, cb)
-        baseSizer.Add(checkBoxSizer, 1, wx.ALL)
-
+        belowSizer.Add(checkBoxSizer, 1, wx.ALL)
         #
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
         loadBtn = wx.lib.buttons.GenButton(self, label='Load')
@@ -82,7 +98,8 @@ class ControlPanel(wx.Panel):
         for btn in [saveBtn, loadBtn, runBtn]:
             btn.SetFont(DEFAULT_BOLD_FONT)
             btnSizer.Add(btn, 1, wx.ALL, MARGIN)
-        baseSizer.Add(btnSizer, 1, wx.ALL)
+        belowSizer.Add(btnSizer, 1, wx.ALL)
+        baseSizer.Add(belowSizer, 2)
         #
         self.SetSizer(baseSizer)
         baseSizer.Fit(self)
@@ -97,6 +114,17 @@ class ControlPanel(wx.Panel):
             checkBoxValues[l] = True
         for p in self.Parent.mainPanel.pages:
             p.background_update()
+    def OnEnterPressed(self, e):
+        keycode = e.GetKeyCode()
+        if keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER or keycode == wx.WXK_TAB:
+            print 'Enter!!'
+            for p in ['From', 'Current', 'To']:
+                print self.tcs[p].GetValue()
+                dateTimeInfo[p] = self.tcs[p].GetValue()
+                # TODO
+                # Refresh!!
+        e.Skip()
+
 
     def probLoad(self):
         print 'problem loading'
@@ -293,6 +321,13 @@ class Grid(object):
         self.nRows, self.nCols = (sh.nrows - 1), (sh.ncols - 1)
         # About zones and landmarks
         self.zones, self.landmarks = {}, {}
+
+        # Load pickle files such as zones, landmarks, Uzk, Zf!!
+        # And visualize Zf!!
+        # Also load beacons's position
+        #    Before doing it, preprocess data!!
+
+
         for i in xrange(sh.nrows):
             for j in xrange(sh.ncols):
                 if i < 1 or j < 1:
@@ -395,6 +430,10 @@ class Grid(object):
         for j in xrange(self.nCols + 1):
             gc.DrawLines([(self.xPos + j * self.wUnit, self.yPos),
                           (self.xPos + j * self.wUnit, self.yPos + self.nRows * self.hUnit)])
+
+
+
+
 
         if checkBoxValues['Landmark2']:
             for l in self.landmarks.itervalues():

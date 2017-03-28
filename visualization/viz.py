@@ -17,7 +17,7 @@ class MainFrame(wx.Frame):
         # basePanel.SetBackgroundColour(BLUE)
         # sx, sy = basePanel.GetSize()
         sx, sy = self.GetSize()
-        vsRatio = (11, 1)
+        vsRatio = (10, 1.5)
         vUnit = (sy - (len(vsRatio) + 1) * MARGIN) / sum(vsRatio)
         #
         self.mainPanel = MainPanel(self, (MARGIN, MARGIN), (sx - 2 * MARGIN, vUnit * vsRatio[0]))

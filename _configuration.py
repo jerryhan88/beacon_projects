@@ -3,6 +3,7 @@ import os
 levelNames = ['Lv%d' % x for x in range(1, 6)]
 
 levelNames = ['Lv1', 'Lv2', 'Lv4']
+levelNames = ['Lv2', 'Lv4']
 K = 4
 TIME_INTERVAL = 60
 TIME_UNIT = TIME_INTERVAL / float(K)

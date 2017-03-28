@@ -15,9 +15,11 @@ except OSError:
     pass
 
 
+numWorker = 6
+
 def run(processerID):
     for hour in xrange(24):
-        if hour % processerID != 0:
+        if hour % numWorker != processerID:
             continue
         for floor in levelNames:
             zones = load_pklFile('%s/z-%s.pkl' % (zone_dpath, floor))

@@ -30,3 +30,9 @@ checkBoxValues = {cb_name: False for cb_name in checkBoxNames}
 # checkBoxValues['Landmark'] = True
 # checkBoxValues['Landmark2'] = True
 checkBoxValues['Grid'] = True
+
+dateTimeInfo = {
+    'From': '01/02/2007:00',
+    'Current': '01/02/2007:00',
+    'To': '01/03/2007:00'
+}

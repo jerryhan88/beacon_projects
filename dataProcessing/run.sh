@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#for i in {19..23}; do
+#for i in {0..5}; do
 #    python -c "from a2_Uzk import run; run($i)" &
 #done
 
