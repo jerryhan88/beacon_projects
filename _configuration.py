@@ -11,6 +11,9 @@ TIME_UNIT = TIME_INTERVAL / float(K)
 beacon_data = os.path.dirname(os.path.realpath(__file__)) + '/z_data'
 zone_dpath = '%s/%s' % (beacon_data, 'zone')
 landmark_dpath = '%s/%s' % (beacon_data, 'landmark')
+beacon_dpath = '%s/%s' % (beacon_data, 'beacon')
+
+
 lmz_dpath = '%s/%s' % (beacon_data, 'lmz')
 tra_dpath = '%s/%s' % (beacon_data, 'tra')
 Uzk_dpath = '%s/%s' % (beacon_data, 'Uzk')

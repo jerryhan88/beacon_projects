@@ -4,12 +4,16 @@ import __init__
 '''
 #
 from visualization import MARGIN, ADJUSTMENT
-from visualization import PURPLE
+from visualization import PURPLE, WHITE
 from visualization import DEFAULT_BOLD_FONT, BIG_FONT, SMALL_FONT
 from visualization import RADIUS
 from visualization import checkBoxNames, checkBoxValues, dateTimeInfo
 from visualization import grid_adjustment
-from _class import Zone, Beacon, Landmark
+
+from _configuration import zone_dpath, landmark_dpath, beacon_dpath
+from _configuration import Zf_dpath
+
+from supporting_modules.file_handling_functions import load_pklFile
 from _configuration import levelNames
 #
 import matplotlib.pyplot as plt
@@ -53,6 +57,10 @@ class MainPanel(wx.Panel):
         sizer = wx.BoxSizer()
         sizer.Add(nb, 1, wx.EXPAND)
         self.SetSizer(sizer)
+
+    def notify_curDateChange(self):
+        for p in self.pages:
+            p.process_curDateChange()
 
 
 class ControlPanel(wx.Panel):
@@ -114,6 +122,7 @@ class ControlPanel(wx.Panel):
             checkBoxValues[l] = True
         for p in self.Parent.mainPanel.pages:
             p.background_update()
+
     def OnEnterPressed(self, e):
         keycode = e.GetKeyCode()
         if keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER or keycode == wx.WXK_TAB:
@@ -121,10 +130,8 @@ class ControlPanel(wx.Panel):
             for p in ['From', 'Current', 'To']:
                 print self.tcs[p].GetValue()
                 dateTimeInfo[p] = self.tcs[p].GetValue()
-                # TODO
-                # Refresh!!
+                self.Parent.mainPanel.notify_curDateChange()
         e.Skip()
-
 
     def probLoad(self):
         print 'problem loading'
@@ -154,8 +161,11 @@ class PagePanel(wx.Panel):
             self.logger = _log_out
         loggers[pageName] = self.logger
         self.layout_view = LayoutView(self, (0, 0), (lp_sx, vUnit * vsRatio[0]), pageName)
-        ChartPanel(self, (hUnit * hsRatio[0] + MARGIN, 0), (hUnit * hsRatio[1] + MARGIN * 2, sy - ADJUSTMENT))
+        ChartPanel(self, (hUnit * hsRatio[0] + MARGIN, 0), (hUnit * hsRatio[1] + MARGIN * 2, sy - ADJUSTMENT -3))
 
+    def process_curDateChange(self):
+        self.layout_view.grid.update_Zf()
+        self.background_update()
 
     def background_update(self):
         self.layout_view.RefreshGC()
@@ -187,11 +197,9 @@ class LineChart(object):
 class ChartPanel(wx.Panel):
     def __init__(self, parent, pos, size):
         wx.Panel.__init__(self, parent, pos=pos, size=size, style=wx.SUNKEN_BORDER)
-        self.SetBackgroundColour(PURPLE)
+        # self.SetBackgroundColour(PURPLE)
         self.sizer = wx.GridSizer(4, 1, 0, 0)
         self.SetSizer(self.sizer)
-        # self.sizer.Add(wx.StaticText(self, -1, "This is a chart panel"), 0, wx.EXPAND)
-
         chart, canvas = self.create_chart('C1')
         self.sizer.Add(canvas, 0, wx.EXPAND)
         chart, canvas = self.create_chart('C2')
@@ -200,12 +208,6 @@ class ChartPanel(wx.Panel):
         self.sizer.Add(canvas, 0, wx.EXPAND)
         chart, canvas = self.create_chart('C4')
         self.sizer.Add(canvas, 0, wx.EXPAND)
-
-
-        #
-        # self.sizer.Add(wx.StaticText(self, -1, "This is a chart panel"), 0, wx.EXPAND)
-        # self.sizer.Add(wx.StaticText(self, -1, "This is a chart panel"), 0, wx.EXPAND)
-        # self.sizer.Add(wx.StaticText(self, -1, "This is a chart panel"), 0, wx.EXPAND)
         self.SendSizeEvent()
 
     def create_chart(self, cName):
@@ -280,14 +282,15 @@ class LayoutView(wx.Panel):
         # draw background image
         base_bmp, w, h = self.bg_bmps['Base']
         gc.DrawBitmap(base_bmp, 0, 0, w, h)
+        if checkBoxValues['Grid']:
+            self.grid.draw(gc)
         for cb_name in checkBoxNames:
             if cb_name == 'Grid' or cb_name == 'Landmark2':
                 continue
             if checkBoxValues[cb_name]:
                 bmp, w, h = self.bg_bmps[cb_name]
                 gc.DrawBitmap(bmp, 0, 0, w, h)
-        if checkBoxValues['Grid']:
-            self.grid.draw(gc)
+
 
     def OnLeftDown(self, e):
         self.grid.pick_beacon(e.GetX(), e.GetY())
@@ -319,48 +322,41 @@ class Grid(object):
         self.xPoints = [self.xPos + i * self.wUnit for i in range(sh.ncols)]
         self.yPoints = [self.yPos + j * self.hUnit for j in range(sh.nrows)]
         self.nRows, self.nCols = (sh.nrows - 1), (sh.ncols - 1)
-        # About zones and landmarks
-        self.zones, self.landmarks = {}, {}
-
-        # Load pickle files such as zones, landmarks, Uzk, Zf!!
-        # And visualize Zf!!
-        # Also load beacons's position
-        #    Before doing it, preprocess data!!
-
-
+        #
+        self.zones = load_pklFile('%s/z-%s.pkl' % (zone_dpath, floor))
+        self.landmarks = load_pklFile('%s/l-%s.pkl' % (landmark_dpath, floor))
+        self.beacons = load_pklFile('%s/b-%s.pkl' % (beacon_dpath, floor))
         for i in xrange(sh.nrows):
             for j in xrange(sh.ncols):
                 if i < 1 or j < 1:
                     continue
                 coords = j - 1, i - 1
-                z = Zone(coords)
+                zid = 'z(%d, %d)' % tuple(coords)
+                z = self.zones[zid]
                 z.init4viz(self.xPos, self.yPos, self.wUnit, self.hUnit)
-                self.zones[coords] = z
                 if sh.cell(i, j).value:
-                    lid = int(sh.cell(i, j).value)
-                    l = Landmark(lid, z)
+                    l_num = int(sh.cell(i, j).value)
+                    l = self.landmarks['1010%s0%04d' % (floor[len('Lv'):], l_num)]
                     l.init4viz((self.xPos + coords[0] * self.wUnit + self.wUnit * 0.5 - RADIUS / float(2),
                                 self.yPos + coords[1] * self.hUnit + self.hUnit * 0.5 - RADIUS / float(2)))
-                    self.landmarks[lid] = l
-                    z.set_landmark(l)
-        # About beacons
-        floor_format = '0' + floor[len('Lv'):] + '0'
-        self.beacons = {}
-        book = open_workbook('../z_data/BeaconLocation.xlsx')
-        sh = book.sheet_by_name('BriefRepresentation')
-        for i in range(1, sh.nrows):
-            locationID, landmarkID = map(str, map(int, [sh.cell(i, 0).value, sh.cell(i, 1).value]))
-            entity = landmarkID[:1]
-            building = landmarkID[1:3]
-            lv = landmarkID[3:6]
-            lm = landmarkID[6:]
-            if floor_format == lv:
-                matched_lm = self.landmarks[int(lm)]
-                b = Beacon(int(locationID), matched_lm.z.coords, matched_lm.pos)
-                self.beacons[int(locationID)] = b
-                z = self.zones[matched_lm.z.coords]
-                z.set_beacon(b)
+        for b in self.beacons.itervalues():
+            z = self.zones[b.l.z.zid]
+            z.add_beacon(b)
+            l = self.landmarks[b.l.lid]
+            b.init4viz(l.pos)
         self.picked_beacon = None
+        #
+        self.floor = floor
+        self.update_Zf()
+
+    def update_Zf(self):
+        _date, _time = dateTimeInfo['Current'].split(':')
+        H = 'H' + _time
+        dd, mm, yyyy = _date.split('/')
+        D = '%s%s%s' % (yyyy, mm, dd)
+        Zf = load_pklFile('%s/Zf-%s-%s-%s.pkl' % (Zf_dpath, self.floor, D, H))
+        for z in self.zones.itervalues():
+            z.feasible = True if z.zid in Zf else False
 
     def write_log(self, s):
         self.logger.write(s)
@@ -374,11 +370,11 @@ class Grid(object):
             return None
         #
         i, j = bisect(self.xPoints, x) - 1, bisect(self.yPoints, y) - 1
-        z = self.zones[i, j]
-        if z.beacon:
-            self.picked_beacon = z.beacon
-            self.write_log('picked beacon %s\n' % z.beacon)
-            z.remove_beacon()
+        zid = 'z(%d, %d)' % (i, j)
+        z = self.zones[zid]
+        if z.bs:
+            self.picked_beacon = z.remove_beacon()
+            self.write_log('picked beacon %s\n' % self.picked_beacon)
         else:
             self.write_log('no beacon in the zone\n')
 
@@ -401,17 +397,14 @@ class Grid(object):
             self.return_original_location()
             return None
         i, j = bisect(self.xPoints, x) - 1, bisect(self.yPoints, y) - 1
-        z = self.zones[i, j]
-        if z.beacon:
-            self.write_log('there is another beacon\n')
-            self.return_original_location()
-            return None
-        else:
-            self.write_log('relocate the beacon to zone %s\n' % z)
-            self.picked_beacon.coords = z.coords
-            self.picked_beacon.pos = z.centerCoords
-            z.beacon = self.picked_beacon
-            self.picked_beacon = None
+        zid = 'z(%d, %d)' % (i, j)
+        z = self.zones[zid]
+        #
+        self.write_log('relocate the beacon to zone %s\n' % z)
+        self.picked_beacon.coords = z.coords
+        self.picked_beacon.pos = z.centerCoords
+        z.add_beacon(self.picked_beacon)
+        self.picked_beacon = None
 
     def return_original_location(self):
         self.write_log('return beacon to the original location\n')
@@ -423,6 +416,16 @@ class Grid(object):
     def draw(self, gc):
         # gc.DrawRectangle(self.xPos, self.yPox, self.nCols * self.wUnit, self.nRows * self.hUnit)
 
+        for z in self.zones.itervalues():
+            if z.feasible:
+                z.draw(gc, wx.Brush(PURPLE))
+
+        if checkBoxValues['Landmark2']:
+            for l in self.landmarks.itervalues():
+                l.draw(gc, SMALL_FONT, RADIUS)
+        for b in self.beacons.itervalues():
+            b.draw(gc, RADIUS, wx.Brush(WHITE))
+
         for i in xrange(self.nRows + 1):
             gc.DrawLines([(self.xPos, self.yPos + i * self.hUnit),
                           (self.xPos + self.nCols * self.wUnit, self.yPos + i * self.hUnit)])
@@ -430,16 +433,6 @@ class Grid(object):
         for j in xrange(self.nCols + 1):
             gc.DrawLines([(self.xPos + j * self.wUnit, self.yPos),
                           (self.xPos + j * self.wUnit, self.yPos + self.nRows * self.hUnit)])
-
-
-
-
-
-        if checkBoxValues['Landmark2']:
-            for l in self.landmarks.itervalues():
-                l.draw(gc, SMALL_FONT, RADIUS)
-        for b in self.beacons.itervalues():
-            b.draw(gc, RADIUS)
 
 
 class TestFrame(wx.Frame):

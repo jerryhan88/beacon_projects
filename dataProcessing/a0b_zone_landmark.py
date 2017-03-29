@@ -32,6 +32,6 @@ for floor in levelNames:
                 lid = '1010%s0%04d' % (floor[len('Lv'):], l_num)
                 l = Landmark(lid, z)
                 landmarks[lid] = l
-                z.set_landmark(l)
+                # z.set_landmark(l)
     save_pklFile('%s/z-%s.pkl' % (zone_dpath, floor), zones)
     save_pklFile('%s/l-%s.pkl' % (landmark_dpath, floor), landmarks)

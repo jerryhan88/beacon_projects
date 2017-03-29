@@ -4,13 +4,17 @@
 
 
 class Beacon(object):
-    def __init__(self, bid, coords, pos):
-        self.bid, self.coords, self.pos = bid, coords, pos
+    def __init__(self, bid, l):
+        self.bid, self.l = bid, l
 
     def __repr__(self):
-        return 'bid %d (%d, %d)' % (self.bid, self.coords[0], self.coords[1])
+        return 'bid %s (%d, %d)' % (self.bid, self.l.z.coords[0], self.l.z.coords[1])
 
-    def draw(self, gc, radius):
+    def init4viz(self, pos):
+        self.pos = pos
+
+    def draw(self, gc, radius, color):
+        gc.SetBrush(color)
         gc.DrawEllipse(self.pos[0] - radius, self.pos[1] - radius, radius * 2, radius * 2)
 
 
@@ -26,7 +30,7 @@ class Landmark(object):
 
     def draw(self, gc, font, radius):
         gc.SetFont(font)
-        gc.DrawText('%d' % self.lid, self.pos[0] + 1, self.pos[1] + 1)
+        gc.DrawText('%s' % self.lid[-3:], self.pos[0] + 1, self.pos[1] + 1)
         gc.DrawEllipse(self.pos[0], self.pos[1], radius, radius)
 
 
@@ -36,7 +40,8 @@ class Zone(object):
         self.i, self.j = coords
         self.zid = 'z(%d, %d)' % (self.i, self.j)
         #
-        self.landmark, self.beacon = None, None
+        self.bs = []
+        self.feasible = False
 
     def __repr__(self):
         return self.zid
@@ -59,8 +64,14 @@ class Zone(object):
     def set_landmark(self, l):
         self.landmark = l
 
-    def set_beacon(self, b):
-        self.beacon = b
+    def add_beacon(self, b):
+        self.bs += [b]
 
     def remove_beacon(self):
-        self.beacon = None
+        return self.bs.pop()
+
+    def draw(self, gc, color):
+        gc.SetBrush(color)
+        gc.DrawRectangle(self.leftUpperCoords[0], self.leftUpperCoords[1], self.width, self.height)
+
+
