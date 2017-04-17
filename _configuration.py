@@ -1,9 +1,9 @@
 import os
 
-levelNames = ['Lv%d' % x for x in range(1, 6)]
+floorNames = ['Lv%d' % x for x in range(1, 6)]
 
-levelNames = ['Lv1', 'Lv2', 'Lv4']
-levelNames = ['Lv2', 'Lv4']
+# floorNames = ['Lv1', 'Lv2', 'Lv3','Lv4']
+floorNames = ['Lv2', 'Lv3','Lv4']
 K = 4
 TIME_INTERVAL = 60
 TIME_UNIT = TIME_INTERVAL / float(K)
@@ -18,4 +18,3 @@ lmz_dpath = '%s/%s' % (beacon_data, 'lmz')
 tra_dpath = '%s/%s' % (beacon_data, 'tra')
 Uzk_dpath = '%s/%s' % (beacon_data, 'Uzk')
 Zf_dpath = '%s/%s' % (beacon_data, 'Zf')
-

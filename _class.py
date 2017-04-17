@@ -3,19 +3,46 @@
 '''
 
 
+
 class Beacon(object):
     def __init__(self, bid, l):
         self.bid, self.l = bid, l
+        #
+        self.pos = None
+        #
+        self.rb, self.a, self.b = None, None, None
+        #
+        self.pbz = {}
 
     def __repr__(self):
         return 'bid %s (%d, %d)' % (self.bid, self.l.z.coords[0], self.l.z.coords[1])
 
-    def init4viz(self, pos):
-        self.pos = pos
+    def init4viz(self, pos, radius, cUnit, beaconColor, tr_pen, tr_brush):
+        self.radius, self.beaconColor = radius, beaconColor
+        self.tr_pen, self.tr_brush = tr_pen, tr_brush
 
-    def draw(self, gc, radius, color):
-        gc.SetBrush(color)
-        gc.DrawEllipse(self.pos[0] - radius, self.pos[1] - radius, radius * 2, radius * 2)
+        self.pos = pos
+        self.cUnit = cUnit
+        self.curPowerLevel = 0
+        self.cur_transmitRange = 0
+
+    def init4heuristic(self, battery_capacity, alpha, beta):
+        self.rb, self.a, self.b = battery_capacity, alpha, beta
+
+    def calc_transmitRange(self):
+        self.cur_transmitRange = self.curPowerLevel * self.cUnit
+
+    def draw(self, gc):
+        # gc.SetPen(wx.Pen(wx.Colour(100, 100, 100), 0.9))
+        gc.SetBrush(self.beaconColor)
+        gc.DrawEllipse(self.pos[0] - self.radius, self.pos[1] - self.radius, self.radius * 2, self.radius * 2)
+        if self.cur_transmitRange != 0:
+            gc.SetPen(self.tr_pen)
+            gc.SetBrush(self.tr_brush)
+            gc.DrawEllipse(self.pos[0] - self.cur_transmitRange,
+                           self.pos[1] - self.cur_transmitRange,
+                           self.cur_transmitRange * 2, self.cur_transmitRange * 2)
+
 
 
 class Landmark(object):
@@ -24,9 +51,6 @@ class Landmark(object):
 
     def __repr__(self):
         return 'lid %s (%d, %d)' % (self.lid, self.z.coords[0], self.z.coords[1])
-
-    def init4viz(self, pos):
-        self.pos = pos
 
     def draw(self, gc, font, radius):
         gc.SetFont(font)
@@ -46,20 +70,19 @@ class Zone(object):
     def __repr__(self):
         return self.zid
 
-    def init4viz(self, girdXPos, gridYPos, wUnit, hUnit):
-        self.width, self.height = wUnit, hUnit
-        halfWidth = self.width / float(2)
-        halfHeight = self.height / float(2)
-        self.centerCoords = (girdXPos + self.i * self.width + halfWidth,
-                             gridYPos + self.j * self.height + halfHeight)
-        self.leftUpperCoords = (girdXPos + self.i * self.width,
-                                gridYPos + self.j * self.height)
-        self.leftLowerCoords = (girdXPos + self.i * self.width,
-                                gridYPos + (self.j + 1) * self.height)
-        self.rightLowerCoords = (girdXPos + (self.i + 1) * self.width,
-                                 gridYPos + (self.j + 1) * self.height)
-        self.rightUpperCoords = (girdXPos + (self.i + 1) * self.width,
-                                 gridYPos + self.j * self.height)
+    def init4viz(self, girdXPos, gridYPos, cUnit, feasibleColor):
+        self.cUnit, self.feasibleColor = cUnit, feasibleColor
+        halfUnit = self.cUnit / float(2)
+        self.centerCoords = (girdXPos + self.i * self.cUnit + halfUnit,
+                             gridYPos + self.j * self.cUnit + halfUnit)
+        self.leftUpperCoords = (girdXPos + self.i * self.cUnit,
+                                gridYPos + self.j * self.cUnit)
+        self.leftLowerCoords = (girdXPos + self.i * self.cUnit,
+                                gridYPos + (self.j + 1) * self.cUnit)
+        self.rightLowerCoords = (girdXPos + (self.i + 1) * self.cUnit,
+                                 gridYPos + (self.j + 1) * self.cUnit)
+        self.rightUpperCoords = (girdXPos + (self.i + 1) * self.cUnit,
+                                 gridYPos + self.j * self.cUnit)
 
     def set_landmark(self, l):
         self.landmark = l
@@ -70,8 +93,7 @@ class Zone(object):
     def remove_beacon(self):
         return self.bs.pop()
 
-    def draw(self, gc, color):
-        gc.SetBrush(color)
-        gc.DrawRectangle(self.leftUpperCoords[0], self.leftUpperCoords[1], self.width, self.height)
-
-
+    def draw(self, gc):
+        if self.feasible:
+            gc.SetBrush(self.feasibleColor)
+            gc.DrawRectangle(self.leftUpperCoords[0], self.leftUpperCoords[1], self.cUnit, self.cUnit)
